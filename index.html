@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Comprehensive guide to Digital Image Processing covering basics, sampling, quantization, filtering, segmentation, and restoration techniques.">
+    <meta name="keywords" content="digital image processing, computer vision, image filtering, segmentation, morphological operations">
+    <meta name="author" content="Digital Image Processing Learning Platform">
+    <title>Digital Image Processing - Complete Learning Guide</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --accent-color: #06b6d4;
+            --dark-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 50px rgba(0,0,0,0.1);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Navigation */
+        .nav {
+            background: white;
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 60px;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 25px;
+            outline: none;
+            width: 250px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 3rem;
+        }
+
+        .sidebar {
+            background: var(--light-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+            border: 1px solid var(--border-color);
+        }
+
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 0;
+            display: block;
+            border-left: 3px solid transparent;
+            padding-left: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .content-area {
+            background: white;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .section h3 {
+            color: var(--secondary-color);
+            font-size: 1.8rem;
+            margin: 2rem 0 1rem 0;
+            position: relative;
+        }
+
+        .section h3::before {
+            content: '';
+            position: absolute;
+            left: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .section h4 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.8rem 0;
+        }
+
+        .section p {
+            margin-bottom: 1rem;
+            text-align: justify;
+        }
+
+        .section ul, .section ol {
+            margin: 1rem 0 1rem 2rem;
+        }
+
+        .section li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.05));
+            border-left: 4px solid var(--primary-color);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .formula {
+            background: var(--dark-bg);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .example {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .example h5 {
+            color: var(--success-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Quiz */
+        .quiz-container {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid var(--border-color);
+        }
+
+        .quiz-question {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .quiz-options {
+            list-style: none;
+            margin: 0;
+        }
+
+        .quiz-options li {
+            margin: 0.5rem 0;
+        }
+
+        .quiz-options label {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-options label:hover {
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .quiz-options input[type="radio"] {
+            margin-right: 0.75rem;
+            accent-color: var(--primary-color);
+        }
+
+        .quiz-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .quiz-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .quiz-result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .correct {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .incorrect {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Progress indicator */
+        .progress-container {
+            background: var(--border-color);
+            height: 4px;
+            border-radius: 2px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 2px;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--dark-bg);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: static;
+                order: 2;
+            }
+
+            .nav-content {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+
+            .search-input {
+                width: 200px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus styles */
+        *:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* Dark mode toggle */
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header" role="banner">
+            <div class="header-content">
+                <h1>Digital Image Processing</h1>
+                <p>A comprehensive learning platform covering fundamental concepts, techniques, and applications in digital image processing</p>
+            </div>
+        </header>
+
+        <nav class="nav" role="navigation" aria-label="Main navigation">
+            <div class="nav-content">
+                <ul class="nav-links">
+                    <li><a href="#home" onclick="showSection('home')">Home</a></li>
+                    <li><a href="#basics" onclick="showSection('basics')">Basics</a></li>
+                    <li><a href="#sampling" onclick="showSection('sampling')">Processing</a></li>
+                    <li><a href="#segmentation" onclick="showSection('segmentation')">Segmentation</a></li>
+                    <li><a href="#filtering" onclick="showSection('filtering')">Filtering</a></li>
+                    <li><a href="#quiz" onclick="showSection('quiz')">Quiz</a></li>
+                </ul>
+                <div class="search-container">
+                    <input type="search" class="search-input" placeholder="Search content..." 
+                           aria-label="Search course content" onkeyup="searchContent()">
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <aside class="sidebar" role="complementary" aria-label="Course navigation">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#home" onclick="showSection('home')" class="active">Introduction</a></li>
+                    <li><a href="#basics" onclick="showSection('basics')">Digital Image Basics</a></li>
+                    <li><a href="#sampling" onclick="showSection('sampling')">Sampling & Quantization</a></li>
+                    <li><a href="#point-ops" onclick="showSection('point-ops')">Point Operations</a></li>
+                    <li><a href="#color" onclick="showSection('color')">Color Processing</a></li>
+                    <li><a href="#segmentation" onclick="showSection('segmentation')">Image Segmentation</a></li>
+                    <li><a href="#region" onclick="showSection('region')">Region-Based Methods</a></li>
+                    <li><a href="#filtering" onclick="showSection('filtering')">Spatial Filtering</a></li>
+                    <li><a href="#restoration" onclick="showSection('restoration')">Image Restoration</a></li>
+                    <li><a href="#quiz" onclick="showSection('quiz')">Interactive Quiz</a></li>
+                </ul>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p style="font-size: 0.9rem; margin-top: 1rem; color: var(--text-secondary);">
+                    Progress: <span id="progressText">0%</span>
+                </p>
+            </aside>
+
+            <div class="content-area" role="main">
+                <!-- Home Section -->
+                <section id="home" class="section active">
+                    <h2>Welcome to Digital Image Processing</h2>
+                    <div class="card">
+                        <p>This comprehensive learning platform covers the fundamental concepts and advanced techniques in digital image processing. Whether you're a student, researcher, or professional, you'll find valuable insights into how digital images are processed, analyzed, and enhanced.</p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h3>What You'll Learn</h3>
+                        <ul>
+                            <li><strong>Digital Image Fundamentals:</strong> Understanding pixels, bit depth, and image representation</li>
+                            <li><strong>Image Processing Pipeline:</strong> From acquisition to compression</li>
+                            <li><strong>Enhancement Techniques:</strong> Point operations, filtering, and color processing</li>
+                            <li><strong>Segmentation Methods:</strong> Extracting meaningful regions and objects</li>
+                            <li><strong>Morphological Operations:</strong> Shape-based image processing</li>
+                            <li><strong>Restoration Techniques:</strong> Removing noise and degradation</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h3>Course Structure</h3>
+                        <p>The course is organized into 8 comprehensive lectures, each building upon previous concepts:</p>
+                        <ol>
+                            <li><strong>Digital Image Basics</strong> - Foundation concepts and terminology</li>
+                            <li><strong>Sampling and Quantization</strong> - Converting continuous images to digital</li>
+                            <li><strong>Point Operations</strong> - Pixel-level transformations</li>
+                            <li><strong>Color Image Processing</strong> - Working with color spaces and models</li>
+                            <li><strong>Image Segmentation</strong> - Partitioning images into regions</li>
+                            <li><strong>Region-Based Segmentation</strong> - Advanced segmentation techniques</li>
+                            <li><strong>Spatial Filtering</strong> - Convolution and correlation operations</li>
+                            <li><strong>Image Restoration</strong> - Noise removal and image reconstruction</li>
+                        </ol>
+                    </div>
+
+                    <div class="example">
+                        <h5>Applications in Real World</h5>
+                        <p>Digital image processing finds applications in numerous fields including:</p>
+                        <ul>
+                            <li>Medical imaging (X-rays, MRI, CT scans)</li>
+                            <li>Remote sensing and satellite imagery</li>
+                            <li>Computer vision and robotics</li>
+                            <li>Digital photography and cinematography</li>
+                            <li>Quality control in manufacturing</li>
+                            <li>Autonomous vehicles and navigation systems</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Digital Image Basics -->
+                <section id="basics" class="section">
+                    <h2>Digital Image Basics</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>What is a Digital Image?</h3>
+                        <p>A digital image is composed of pixels with intensity values derived from a 2-D function f(x, y), where x and y represent spatial coordinates, and f denotes intensity or gray level.</p>
+                    </div>
+
+                    <h3>Key Concepts</h3>
+                    
+                    <div class="card">
+                        <h4>Pixel</h4>
+                        <p>The smallest addressable unit in an image. Each pixel contains intensity information that determines the brightness or color at that specific location.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>RGB Color Model</h4>
+                        <p>A three-tuple (r, g, b) representing three color channels - Red, Green, and Blue. This is the most common color representation in digital systems.</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Bit Depth</h4>
+                        <p>Defines the range of values (2^n) available for each pixel. For example, 8-bit depth provides 0–255 possible values per color channel.</p>
+                        <div class="formula">
+                            Number of possible values = 2^n
+                            <br>where n = number of bits per pixel
+                        </div>
+                    </div>
+
+                    <h3>Image Storage</h3>
+                    <ul>
+                        <li><strong>Grayscale Images:</strong> Stored as a 2-D array (width × height)</li>
+                        <li><strong>RGB Images:</strong> Stored as a 3-D array (width × height × 3)</li>
+                        <li><strong>Pixel Values:</strong> Can be represented as integers (0–255) or floats (0–1)</li>
+                        <li><strong>Common Formats:</strong> JPEG, PNG, GIF - each containing metadata</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <h4>Digitization Process</h4>
+                        <p><strong>Sampling:</strong> Discretizes spatial coordinates into a grid of pixels</p>
+                        <p><strong>Quantization:</strong> Discretizes intensity values into discrete levels</p>
+                    </div>
+
+                    <h3>Image Processing Pipeline</h3>
+                    <div class="card">
+                        <ol>
+                            <li><strong>Acquisition/Storage:</strong> Captures and stores images (e.g., JPEG format)</li>
+                            <li><strong>Pre-processing:</strong> Grayscale conversion, enhancement, restoration</li>
+                            <li><strong>Segmentation:</strong> Extract objects (challenges: noise, occlusion)</li>
+                            <li><strong>Morphological Processing:</strong> Correct structural defects</li>
+                            <li><strong>Information Extraction:</strong> Convert unstructured to structured data</li>
+                            <li><strong>Interpretation:</strong> Classification and object detection</li>
+                            <li><strong>Compression:</strong> Reduce size (may affect quality)</li>
+                        </ol>
+                    </div>
+
+                    <div class="example">
+                        <h5>Image Formation Model</h5>
+                        <p>An image can be represented as:</p>
+                        <div class="formula">
+                            f(x, y) = i(x, y) · r(x, y)
+                        </div>
+                        <p>Where:</p>
+                        <ul>
+                            <li><strong>i(x, y):</strong> Illumination component</li>
+                            <li><strong>r(x, y):</strong> Reflectance component</li>
+                            <li><strong>Gray Level:</strong> l = f(x, y), ranging from [0, L–1]</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Sampling and Quantization -->
+                <section id="sampling" class="section">
+                    <h2>Image Sampling and Quantization</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Overview</h3>
+                        <p>Converting continuous images f(x, y) into digital format involves two critical steps: sampling (spatial discretization) and quantization (amplitude discretization).</p>
+                    </div>
+
+                    <h3>Sampling</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Discretizes spatial coordinates to form a grid of pixels. The sampling rate controls the number of pixels, directly impacting spatial resolution.</p>
+                        
+                        <p><strong>Higher sampling rate = More pixels = Better resolution = Increased storage</strong></p>
+                    </div>
+
+                    <h4>Types of Sampling</h4>
+                    
+                    <div class="card">
+                        <h5>Down-sampling</h5>
+                        <p>Reduces pixel count by selecting every M-th value: y(n) = x(Mn)</p>
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>Input: x(n) = {1, -1, 2, 4, 0, 3, 2, 1, 5} with M=2</p>
+                            <p>Output: y(n) = {1, 2, 0, 2, 5}</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h5>Up-sampling</h5>
+                        <p>Increases pixel count by inserting L-1 zeros between values</p>
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>Input: x(n) = {1, 2, 4, -2, 3, 2, 1} with L=2</p>
+                            <p>Output: y(n) = {1, 0, 2, 0, 4, 0, -2, 0, 3, 0, 2, 0, 1}</p>
+                        </div>
+                    </div>
+
+                    <h4>Up-sampling Techniques</h4>
+                    <ul>
+                        <li><strong>Nearest Neighbor:</strong> Duplicates nearby pixel values</li>
+                        <li><strong>Bilinear Interpolation:</strong> Uses four neighboring pixels for smoother results</li>
+                        <li><strong>Cubic Interpolation:</strong> Provides highest accuracy for improved image quality</li>
+                    </ul>
+
+                    <h3>Quantization</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Converts continuous intensity values into discrete levels (e.g., 0–255 for 8-bit images).</p>
+                        
+                        <div class="formula">
+                            L = 2^k
+                            <br>where k = bits per pixel (BPP)
+                        </div>
+                        
+                        <p><strong>Examples:</strong></p>
+                        <ul>
+                            <li>k=2 → L=4 levels</li>
+                            <li>k=8 → L=256 levels (standard grayscale)</li>
+                        </ul>
+                    </div>
+
+                    <div class="example">
+                        <h5>Quantization Example</h5>
+                        <p>Sequence: 550, 600, -100, 150, -300, 900, 0, 850 with 2 bits:</p>
+                        <ul>
+                            <li>Levels: L = 2² = 4</li>
+                            <li>Range: 900 - (-300) = 1200</li>
+                            <li>Quantization step (δ): 1200 ÷ 4 = 300</li>
+                            <li>Level ranges: [-300 to 0], [1 to 300], [301 to 600], [601 to 900]</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <h4>Impact on Image Quality</h4>
+                        <ul>
+                            <li><strong>Spatial Resolution:</strong> Higher sampling rate = sharper image</li>
+                            <li><strong>Intensity Resolution:</strong> More gray levels = richer details</li>
+                            <li><strong>Storage:</strong> M×N image with k bits = M×N×k bits total</li>
+                            <li><strong>False Contours:</strong> Occur with low quantization levels</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Point Operations -->
+                <section id="point-ops" class="section">
+                    <h2>Point Operations</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Overview</h3>
+                        <p>Point operations modify pixel values without altering image size, geometry, or local structure. The new pixel value depends only on its previous value, mapped by function f(a).</p>
+                    </div>
+
+                    <h3>Enhancement Techniques</h3>
+
+                    <div class="card">
+                        <h4>Negative Transformation</h4>
+                        <p>Produces the negative of an image using the formula:</p>
+                        <div class="formula">
+                            s = (L-1) - r
+                            <br>For 8-bit: s = 255 - r
+                        </div>
+                        
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>If r = 0 (black) → s = 255 (white)</p>
+                            <p>If r = 255 (white) → s = 0 (black)</p>
+                            <p>Pixel value 100 → 255 - 100 = 155</p>
+                        </div>
+
+                        <p><strong>Applications:</strong> Enhances white/gray details in dark regions, increases contrast</p>
+                    </div>
+
+                    <div class="card">
+                        <h4>Gray-scale Threshold Transform</h4>
+                        <p>Converts a gray-scale image to a binary image using a threshold T.</p>
+                        <div class="formula">
+                            s = { L-1 if r ≥ T; 0 if r < T }
+                        </div>
+                        <p><strong>Applications:</strong> Object detection, image segmentation</p>
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>For T = 128 and L = 256:</p>
+                            <p>r = 150 → s = 255</p>
+                            <p>r = 100 → s = 0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Clipping Transform</h4>
+                        <p>Highlights pixels within a specified range [min, max].</p>
+                        <div class="formula">
+                            s = { L-1 if min ≤ r ≤ max; 0 otherwise }
+                        </div>
+                        <p><strong>Purpose:</strong> Focus on specific intensity ranges, remove background</p>
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>For min = 50, max = 200:</p>
+                            <p>r = 75 → s = 255</p>
+                            <p>r = 25 → s = 0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Bit-plane Slicing</h4>
+                        <p>Analyzes individual bits in pixel values by separating each bit into a binary image.</p>
+                        <p><strong>Applications:</strong> Image enhancement, compression</p>
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>For pixel value 153 (binary: 10011001):</p>
+                            <p>Bit-plane 7: 1, Bit-plane 6: 0, Bit-plane 5: 0, etc.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Color Image Processing -->
+                <section id="color" class="section">
+                    <h2>Color Image Processing</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Overview</h3>
+                        <p>Color is a powerful descriptor in automated image analysis, simplifying object identification and extraction. Human vision can distinguish thousands of color shades but only 20-30 gray shades, making color highly effective for image processing.</p>
+                    </div>
+
+                    <h3>Pseudo-Color Processing</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Converts a gray-scale image into a color image by assigning colors to different intensity levels.</p>
+                        <p><strong>Purpose:</strong> Enhances visual interpretation of gray-scale images lacking detail or contrast.</p>
+                        <p><strong>Applications:</strong> Medical imaging, satellite imagery, thermal imaging.</p>
+                        <p><strong>Techniques:</strong> Intensity slicing, color mapping using lookup tables (LUT).</p>
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>A thermal image displayed in pseudo-color to highlight temperature variations.</p>
+                        </div>
+                    </div>
+
+                    <h3>Full-Color Processing</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Processes images already in color (e.g., RGB), manipulating color components directly.</p>
+                        <p><strong>Purpose:</strong> Enhances or analyzes color information while preserving natural appearance.</p>
+                        <p><strong>Applications:</strong> Digital photography, video processing, computer vision.</p>
+                        <p><strong>Techniques:</strong> Color space transformations, color balancing, histogram equalization, edge detection in color images.</p>
+                    </div>
+
+                    <h3>Color Fundamentals</h3>
+                    <ul>
+                        <li><strong>Color Spectrum:</strong> White light splits into a continuous spectrum: violet, indigo, blue, green, yellow, orange, red.</li>
+                        <li><strong>Color Perception:</strong> Depends on light reflected by an object.</li>
+                        <li><strong>Achromatic Light:</strong> Light without color (grayscale), characterized by intensity.</li>
+                        <li><strong>Chromatic Light Quantities:</strong> Radiance, luminance, brightness.</li>
+                        <li><strong>Primary Colors:</strong> Red (700 nm), Green (546.1 nm), Blue (435.8 nm).</li>
+                        <li><strong>Secondary Colors:</strong> Magenta (R+B), Cyan (G+B), Yellow (R+G).</li>
+                        <li><strong>Color Characteristics:</strong> Hue, saturation, brightness, chromaticity.</li>
+                    </ul>
+
+                    <h3>Color Models</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>A color model specifies colors in a standardized 3-D coordinate system, where each color is a single point.</p>
+                        <p><strong>Common Models:</strong></p>
+                        <ul>
+                            <li><strong>RGB:</strong> Used in color monitors and video cameras.</li>
+                            <li><strong>CMYK:</strong> Used in printing devices.</li>
+                            <li><strong>HSI:</strong> Aligns with human color perception, separates color and grayscale information.</li>
+                        </ul>
+                    </div>
+
+                    <div class="example">
+                        <h5>RGB Color Model</h5>
+                        <p>Based on a Cartesian coordinate system with R, G, B values normalized to [0,1]. The color cube has primary colors at corners, secondary colors at other corners, black at (0,0,0), white at (1,1,1), and grayscale along the diagonal.</p>
+                    </div>
+                </section>
+
+                <!-- Image Segmentation -->
+                <section id="segmentation" class="section">
+                    <h2>Image Segmentation</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Overview</h3>
+                        <p>Image segmentation partitions an image into multiple regions to locate objects and boundaries, simplifying object identification and analysis.</p>
+                    </div>
+
+                    <h3>Fundamentals</h3>
+                    <div class="card">
+                        <p>Let R denote the entire image region. Segmentation divides R into n sub-regions (R1, R2, ..., Rn) with properties like completeness, disjointness, homogeneity within regions, and heterogeneity between adjacent regions.</p>
+                    </div>
+
+                    <h3>Segmentation Properties</h3>
+                    <ul>
+                        <li><strong>Discontinuity:</strong> Partitions based on abrupt intensity changes (e.g., edges).</li>
+                        <li><strong>Similarity:</strong> Partitions based on similar intensity or texture according to predefined criteria.</li>
+                    </ul>
+
+                    <h3>Discontinuity-Based Segmentation</h3>
+                    <div class="card">
+                        <h4>Methods</h4>
+                        <ul>
+                            <li><strong>Isolated Point Detection:</strong> Uses second-order derivatives (Laplacian) to detect points where the filter response exceeds a threshold.</li>
+                            <li><strong>Line Detection:</strong> Uses second-order derivatives for thinner lines. Masks detect lines in specific directions.</li>
+                            <li><strong>Edge Detection:</strong> Identifies edges using first-order (e.g., Sobel) or second-order (e.g., Laplacian) derivatives.</li>
+                        </ul>
+                    </div>
+
+                    <h3>Similarity-Based Segmentation</h3>
+                    <div class="card">
+                        <h4>Methods</h4>
+                        <ul>
+                            <li><strong>Thresholding:</strong> Segments based on intensity ranges. Includes global, variable, and adaptive thresholding.</li>
+                            <li><strong>Region Growing:</strong> Starts from seed pixels and grows regions by adding similar pixels.</li>
+                            <li><strong>Region Splitting and Merging:</strong> Divides heterogeneous regions and merges similar adjacent regions.</li>
+                        </ul>
+                    </div>
+
+                    <div class="example">
+                        <h5>Global Thresholding Procedure</h5>
+                        <ol>
+                            <li>Select initial threshold T (e.g., average intensity)</li>
+                            <li>Segment into G1 (intensity > T) and G2 (intensity ≤ T)</li>
+                            <li>Compute mean intensities m1 and m2 for G1 and G2</li>
+                            <li>Update T as (m1 + m2)/2</li>
+                            <li>Repeat until T stabilizes</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- Region-Based Segmentation -->
+                <section id="region" class="section">
+                    <h2>Region-Based Segmentation</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Overview</h3>
+                        <p>Region-based segmentation directly identifies regions using connectivity of similar pixels, offering robustness to noise compared to edge or threshold methods.</p>
+                    </div>
+
+                    <h3>Region Growing</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Grows regions from seed points by adding connected pixels meeting a predicate Q (e.g., intensity similarity).</p>
+                        
+                        <p><strong>Procedure:</strong></p>
+                        <ol>
+                            <li>Identify connected components in seed image S</li>
+                            <li>Form fQ image: fQ(x,y)=1 if input satisfies Q, else 0</li>
+                            <li>Append 8-connected 1-valued pixels in fQ to seeds in S</li>
+                            <li>Label connected components in resulting image g</li>
+                        </ol>
+                    </div>
+
+                    <h3>Region Splitting and Merging</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Divides inhomogeneous regions and merges homogeneous ones.</p>
+                        
+                        <p><strong>Procedure:</strong></p>
+                        <ul>
+                            <li><strong>Split:</strong> If region R is inhomogeneous (p(R)=false), divide into four sub-regions</li>
+                            <li><strong>Merge:</strong> If adjacent regions Ri and Rj are homogeneous (p(Ri ∪ Rj)=true), merge them</li>
+                            <li>Stop when no further splitting or merging is possible</li>
+                        </ul>
+                    </div>
+
+                    <h3>Morphological Operations</h3>
+                    <div class="card">
+                        <h4>Definition</h4>
+                        <p>Processes binary images based on shape using structuring elements to refine segmentation results.</p>
+                        
+                        <p><strong>Basic Operations:</strong></p>
+                        <ul>
+                            <li><strong>Erosion (f ⊖ s):</strong> Shrinks foreground, splits joined objects</li>
+                            <li><strong>Dilation (f ⊕ s):</strong> Expands foreground, fills holes</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Spatial Filtering -->
+                <section id="filtering" class="section">
+                    <h2>Spatial Filtering</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Fundamentals</h3>
+                        <p>Spatial filtering modifies an image by replacing each pixel value with a function of its value and its neighbors. Filters can be linear (e.g., convolution) or nonlinear (e.g., median filter).</p>
+                    </div>
+
+                    <h3>Convolution and Correlation</h3>
+                    <div class="card">
+                        <h4>Convolution</h4>
+                        <p>Slides a kernel over the image, computing a weighted sum. For 1D: y[n] = Σ h[m] · x[n-m]</p>
+                        
+                        <div class="example">
+                            <h5>Example</h5>
+                            <p>Image I = {0,0,1,0,0}, kernel k = {3,2,8}</p>
+                            <p>After zero-padding and kernel rotation, output y = {0,0,3,2,0}</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h4>Correlation</h4>
+                        <p>Similar to convolution but without kernel rotation. Used in template matching.</p>
+                    </div>
+
+                    <h3>Non-Linear Filters</h3>
+                    <div class="card">
+                        <h4>Order-Statistics Filters</h4>
+                        <p>Based on ordering pixel values in a neighborhood.</p>
+                        <ul>
+                            <li><strong>Median Filter:</strong> Replaces pixel with median value, effective for salt-and-pepper noise</li>
+                            <li><strong>Min Filter:</strong> Replaces with minimum value, good for salt noise</li>
+                            <li><strong>Max Filter:</strong> Replaces with maximum value, good for pepper noise</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Image Restoration -->
+                <section id="restoration" class="section">
+                    <h2>Image Restoration</h2>
+                    
+                    <div class="highlight-box">
+                        <h3>Definition</h3>
+                        <p>Image restoration reconstructs original images from degraded versions by identifying and reversing degradation processes like noise or blur.</p>
+                    </div>
+
+                    <h3>Noise in Images</h3>
+                    <div class="card">
+                        <p><strong>Sources:</strong> Image acquisition (e.g., sensor noise), transmission interference</p>
+                        <p><strong>Model:</strong> g(x,y) = f(x,y) + η(x,y), where η is noise</p>
+                    </div>
+
+                    <h3>Noise Removal Techniques</h3>
+                    <div class="card">
+                        <h4>Spatial Domain Filters</h4>
+                        <ul>
+                            <li><strong>Mean Filter:</strong> Averages neighborhood pixels</li>
+                            <li><strong>Median Filter:</strong> Replaces with median value, effective for impulse noise</li>
+                            <li><strong>Adaptive Filters:</strong> Adjust based on local statistics</li>
+                        </ul>
+                    </div>
+
+                    <div class="card">
+                        <h4>Frequency Domain Filters</h4>
+                        <p>Used for periodic noise removal, e.g., band-reject filters to eliminate specific frequencies.</p>
+                    </div>
+                </section>
+
+                <!-- Interactive Quiz -->
+                <section id="quiz" class="section">
+                    <h2>Interactive Quiz</h2>
+                    
+                    <div class="quiz-container">
+                        <h3>Test Your Knowledge</h3>
+                        <p>Answer the following questions to assess your understanding of digital image processing concepts.</p>
+                        
+                        <div class="quiz-question" id="q1">
+                            <p>1. What is the primary purpose of image sampling?</p>
+                            <ul class="quiz-options">
+                                <li><label><input type="radio" name="q1" value="a"> A. To convert continuous intensity values into discrete levels</label></li>
+                                <li><label><input type="radio" name="q1" value="b"> B. To discretize spatial coordinates into pixels</label></li>
+                                <li><label><input type="radio" name="q1" value="c"> C. To reduce image size</label></li>
+                                <li><label><input type="radio" name="q1" value="d"> D. To enhance image contrast</label></li>
+                            </ul>
+                            <button class="quiz-btn" onclick="checkAnswer('q1', 'b')">Submit Answer</button>
+                            <div class="quiz-result" id="result-q1"></div>
+                        </div>
+
+                        <div class="quiz-question" id="q2">
+                            <p>2. Which color model aligns with human color perception by separating hue, saturation, and intensity?</p>
+                            <ul class="quiz-options">
+                                <li><label><input type="radio" name="q2" value="a"> A. RGB</label></li>
+                                <li><label><input type="radio" name="q2" value="b"> B. CMYK</label></li>
+                                <li><label><input type="radio" name="q2" value="c"> C. HSI</label></li>
+                                <li><label><input type="radio" name="q2" value="d"> D. YUV</label></li>
+                            </ul>
+                            <button class="quiz-btn" onclick="checkAnswer('q2', 'c')">Submit Answer</button>
+                            <div class="quiz-result" id="result-q2"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>© 2025 Digital Image Processing Learning Platform. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Function to show a specific section and hide others
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show the selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update sidebar active link
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${sectionId}`) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Update progress (simplified version)
+            updateProgress();
+        }
+
+        // Function to filter content based on search input
+        function searchContent() {
+            const searchTerm = document.querySelector('.search-input').value.toLowerCase();
+            document.querySelectorAll('.section').forEach(section => {
+                const text = section.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+
+        // Function to check quiz answers
+        function checkAnswer(questionId, correctAnswer) {
+            const selected = document.querySelector(`#${questionId} input[type="radio"]:checked`);
+            const resultDiv = document.getElementById(`result-${questionId}`);
+            if (selected) {
+                if (selected.value === correctAnswer) {
+                    resultDiv.textContent = 'Correct! Well done.';
+                    resultDiv.className = 'quiz-result correct';
+                } else {
+                    resultDiv.textContent = 'Incorrect. Try again.';
+                    resultDiv.className = 'quiz-result incorrect';
+                }
+            } else {
+                resultDiv.textContent = 'Please select an answer.';
+                resultDiv.className = 'quiz-result';
+            }
+        }
+
+        // Function to update progress bar (simplified)
+        function updateProgress() {
+            const totalSections = document.querySelectorAll('.section').length;
+            const visitedSections = document.querySelectorAll('.section.active').length;
+            const progress = (visitedSections / totalSections) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${Math.round(progress)}%`;
+        }
+
+        // Initialize the progress bar
+        updateProgress();
+    </script>
+</body>
+</html>
